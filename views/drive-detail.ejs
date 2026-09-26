@@ -1,0 +1,83 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title><%= drive.name %> — PulseReach</title><link rel="stylesheet" href="/css/app.css?v=9"></head>
+<body class="app simple-app">
+<main class="form-shell wide">
+  <div class="form-top">
+    <a class="brand" href="/dashboard"><span class="brand-mark">♥</span> PulseReach</a>
+    <div class="inline-actions compact-actions">
+      <a href="/communications" class="btn btn-ghost">Communication centre</a>
+      <a href="/participants" class="btn btn-ghost">Manage participants</a>
+    </div>
+  </div>
+
+  <div class="form-head">
+    <div class="eyebrow">DRIVE WORKSPACE</div>
+    <h1><%= drive.name %></h1>
+    <p><%= drive.venue %> · <%= new Date(drive.date).toLocaleString('en-IN') %></p>
+  </div>
+
+  <% if (predictionRun) { %>
+    <% if (predictionRun.failed > 0) { %>
+      <div class="notice"><b>AI prediction run completed with errors.</b> Gemini succeeded for <%= predictionRun.gemini %> participant(s); <%= predictionRun.failed %> failed. Failed predictions were not replaced with heuristic values.<% if (predictionRun.error) { %><br><small><%= predictionRun.error %></small><% } %></div>
+    <% } else { %>
+      <div class="notice"><b>AI prediction run complete.</b> Gemini generated <%= predictionRun.gemini %> participant prediction(s).</div>
+    <% } %>
+  <% } %>
+
+  <section class="stats">
+    <div><span>Registrations</span><strong><%= counts.total %></strong></div>
+    <div><span>Confirmed</span><strong><%= counts.confirmed %></strong></div>
+    <div><span>Predicted attendance</span><strong><%= counts.predicted %></strong></div>
+    <div><span>Actual attendance</span><strong><%= counts.attended %></strong></div>
+  </section>
+
+  <section class="panel share-panel">
+    <div>
+      <div>
+        <div class="eyebrow">SHARE REGISTRATION</div>
+        <h2>Scan or share the link</h2>
+        <p class="muted"><%= url %></p>
+        <div class="inline-actions">
+          <a class="btn btn-primary" href="/register/<%= drive._id %>">Open registration</a>
+          <button class="btn btn-ghost" onclick="navigator.clipboard.writeText('<%= url %>');this.innerText='Copied ✓'">Copy link</button>
+        </div>
+      </div>
+      <div><img class="qr" src="<%= qr %>" alt="Registration QR code"></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head drive-controls">
+      <div><h2>Participants</h2><p>Confirmation, consent, attendance and communication are managed here.</p></div>
+      <div class="inline-actions compact-actions">
+        <form method="post" action="/predictions/run/<%= drive._id %>"><button class="btn btn-primary">✦ Run AI turnout prediction</button></form>
+        <form method="post" action="/communications/preview-drive/<%= drive._id %>"><button class="btn btn-ghost">Generate personalised previews</button></form>
+        <form method="post" action="/drives/<%= drive._id %>/status" class="inline-actions compact-actions">
+          <select name="status"><option <%= drive.status==='Active'?'selected':'' %>>Active</option><option <%= drive.status==='Draft'?'selected':'' %>>Draft</option><option <%= drive.status==='Completed'?'selected':'' %>>Completed</option></select>
+          <button class="btn btn-dark">Update status</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="participant-table">
+      <div class="table-row table-head participant-row"><span>Participant</span><span>Prediction</span><span>Confirmation</span><span>Consent</span><span>Attendance</span><span>Message</span></div>
+      <% if (!participants.length) { %>
+        <div class="empty-state"><b>No registrations yet.</b><p>Share the QR code above to start.</p></div>
+      <% } %>
+      <% participants.forEach(p=>{ %>
+        <div class="table-row participant-row">
+          <div><b><%= p.name %></b><small><%= p.registrationCode %> · <%= p.preferredLanguage %></small></div>
+          <span><b class="score-pill"><%= p.predictedAttendance %>%</b><small class="prediction-meta"><%= p.predictionSource || 'Heuristic' %> · <%= p.predictionConfidence || 0 %>% confidence</small></span>
+          <div class="actions"><form method="post" action="/participants/<%= p._id %>/confirm"><select name="status" onchange="this.form.submit()"><option <%= p.confirmationStatus==='Confirmed'?'selected':'' %>>Confirmed</option><option <%= p.confirmationStatus==='Pending'?'selected':'' %>>Pending</option><option <%= p.confirmationStatus==='Declined'?'selected':'' %>>Declined</option></select></form></div>
+          <form method="post" action="/participants/<%= p._id %>/consent" class="consent-mini"><label><input type="checkbox" name="communicationConsent" <%= p.communicationConsent?'checked':'' %>> Drive</label><label><input type="checkbox" name="futureDriveConsent" <%= p.futureDriveConsent?'checked':'' %>> Future</label><button class="tiny-btn">Save</button></form>
+          <div class="actions"><form method="post" action="/participants/<%= p._id %>/attendance"><select name="status" onchange="this.form.submit()"><option <%= p.attendanceStatus==='Not Marked'?'selected':'' %>>Not Marked</option><option <%= p.attendanceStatus==='Attended'?'selected':'' %>>Attended</option><option <%= p.attendanceStatus==='Absent'?'selected':'' %>>Absent</option></select></form></div>
+          <div class="actions"><form method="post" action="/communications/preview/<%= p._id %>"><button class="tiny-btn">Generate</button></form></div>
+        </div>
+      <% }) %>
+    </div>
+  </section>
+
+  <section class="danger-zone"><form method="post" action="/drives/<%= drive._id %>/delete" onsubmit="return confirm('Delete this drive and its registrations?')"><button class="btn btn-danger">Delete drive</button></form></section>
+</main>
+<script src="/js/pulsereach-assistant.js?v=1"></script></body></html>
