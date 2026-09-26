@@ -1,0 +1,13 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Donor Sign In — PulseReach</title><link rel="stylesheet" href="/css/app.css?v=20"></head>
+<body class="register-page"><main class="register-shell"><div class="register-brand"><span class="brand-mark">♥</span> PulseReach</div><div class="register-card">
+<div class="eyebrow">DONOR PORTAL</div><h1>Welcome back.</h1><p class="lead">Sign in to view your donations, certificates, registrations and communication preferences.</p>
+<% if (error) { %><div class="form-error"><%= error %></div><% } %>
+<form method="post" action="/donor/login">
+<input type="hidden" name="next" value="<%= next %>">
+<label>Mobile number<input name="phone" required inputmode="numeric" placeholder="10-digit mobile number"></label>
+<label>Password<input type="password" name="password" required placeholder="Your account password"></label>
+<button class="btn btn-primary full-btn">Open my dashboard →</button>
+</form>
+<div class="info-note"><b>New to PulseReach?</b><span>Create your donor account first, then choose which drives you want to register for from your dashboard.</span></div><div style="margin-top:18px;text-align:center">New donor? <a class="text-link" href="/donor/register">Create donor account</a></div>
+</div></main><script src="/js/pulsereach-assistant.js?v=1"></script></body></html>
