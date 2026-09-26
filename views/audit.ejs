@@ -1,0 +1,48 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Audit Trail — PulseReach</title><link rel="stylesheet" href="/css/app.css?v=11"></head><body class="app"><aside class="sidebar"><a class="brand" href="/dashboard"><span class="brand-mark"><img src="/images/pulsereach-logo.png" alt="PulseReach logo"></span> PulseReach</a><div class="org"><div class="avatar"><%= organizer.name.slice(0,2).toUpperCase() %></div><div><b><%= organizer.name %></b><small><%= organizer.organization %></small></div></div><nav class="side-nav"><a href="/dashboard">⌂ Overview</a><a href="/dashboard#drives">◷ Drives</a><a href="/participants">♙ Participants</a><a href="/reminders">✦ Reminders</a><a href="/communications">✉ Communications</a><a href="/participants">✓ Attendance</a><a href="/participants">◌ Consent</a><% if (['OWNER','MANAGER'].includes(organizer.role)) { %><a href="/volunteers">♙ Volunteers</a><a class="active" href="/audit">◌ Audit trail</a><% } %></nav><div class="side-bottom"><form method="post" action="/logout"><button class="side-logout">↪ Sign out</button></form></div></aside><main class="main"><header class="page-head"><div><div class="eyebrow">ACCOUNTABILITY</div><h1>Audit trail</h1><p>Donor activity for blood donation camps created by you.</p></div></header><section class="panel">
+  <form method="get" action="/audit" style="display:flex;gap:12px;align-items:end;flex-wrap:wrap;margin-bottom:20px">
+    <div style="min-width:280px;flex:1">
+      <label class="eyebrow" for="drive">BLOOD DONATION CAMP</label>
+      <select id="drive" name="drive" class="input">
+        <option value="">All camps created by me</option>
+        <% drives.forEach(drive => { %>
+          <option value="<%= drive._id %>" <%= String(selectedDriveId || '') === String(drive._id) ? 'selected' : '' %>><%= drive.name %> · <%= new Date(drive.date).toLocaleDateString('en-IN') %></option>
+        <% }) %>
+      </select>
+    </div>
+    <button class="btn" type="submit">View donor activity</button>
+  </form>
+
+  <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px">
+    <span class="score-pill"><%= auditSummary.total %> donor events</span>
+    <span class="score-pill"><%= auditSummary.donors %> donors</span>
+    <span class="muted">Only donors registered under your own camps are included.</span>
+  </div>
+
+  <div class="drive-table">
+    <div class="table-row table-head" style="grid-template-columns:1.2fr 1.35fr 1.35fr 1.1fr 1fr 2fr">
+      <span>Time</span><span>Donor</span><span>Camp</span><span>Action</span><span>Entity</span><span>Details</span>
+    </div>
+    <% logs.forEach(log=>{ %>
+      <div class="table-row" style="grid-template-columns:1.2fr 1.35fr 1.35fr 1.1fr 1fr 2fr">
+        <span><%= new Date(log.createdAt).toLocaleString('en-IN') %></span>
+        <div>
+          <b><%= log.donorId?.name || log.actorName || 'Donor' %></b>
+          <% if (log.donorId?.phone) { %><small><%= log.donorId.phone %></small><% } %>
+        </div>
+        <div>
+          <b><%= log.driveId?.name || 'Blood drive' %></b>
+          <small><%= log.driveId?.venue || '' %></small>
+        </div>
+        <span><b class="score-pill"><%= log.action %></b></span>
+        <span><%= log.entityType %> <%= log.entityId ? '#'+String(log.entityId).slice(-6) : '' %></span>
+        <small><%= JSON.stringify(log.details || {}) %></small>
+      </div>
+    <% }) %>
+    <% if (!logs.length) { %>
+      <div class="empty-state">
+        <b>No donor audit events for this camp yet.</b>
+        <p>Donor registration, confirmation, consent, notification engagement and attendance activity will appear here.</p>
+      </div>
+    <% } %>
+  </div>
+</section></main><script src="/js/pulsereach-assistant.js?v=1"></script></body></html>
