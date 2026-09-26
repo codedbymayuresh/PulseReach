@@ -3,3 +3,8 @@ node_modules/
 .DS_Store
 
 gemini.key
+
+.env
+.env.local
+gemini.key
+node_modules/
