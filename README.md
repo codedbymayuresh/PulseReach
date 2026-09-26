@@ -1,4 +1,4 @@
-# PulseReach — Commits 4–7 combined
+# PulseReach — Commits 4
 
 This version consolidates four development milestones into one working pass:
 
